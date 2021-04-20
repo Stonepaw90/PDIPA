@@ -87,8 +87,10 @@ for i in user_input.split(' '):
         point.append(float(i))
 s = sympy.Matrix([b[i] - g[i].subs([*zip(X, point[:len(X)])]).evalf() for i in range(len(g))])
 #st.write(sympy.Matrix([b[0] - g[0].subs([*zip(X, point[:len(X)])]).evalf()]))
+
 st.write(f"Maximize {f} \n subject to")
 for i in range(len(g)):
+    strink = f"{g[i]} + s_{i} = {b[i]}"
     st.write(f"{g[i]} + s_{i} = {b[i]}")
 
 
@@ -109,7 +111,21 @@ RHST = gradient(f,X).T-J.T*Y
 RHS = sympy.Matrix([RHST,RHSB])
 
 
+st.latex(r'''\text{We need to solve for } \textbf{d}^x, \textbf{d}^y \text{ using (15.14): } \begin{bmatrix}
+\textbf{Q} & \textbf{J}(\textbf{x})^T\\
+\textbf{J}(\textbf{x}) & \textbf{S}
+\end{bmatrix}\begin{bmatrix}
+\textbf{d}^x \\ \textbf{d}^y
+\end{bmatrix}
+=
+\begin{bmatrix}
+\nabla f(\textbf{x}) - \textbf{J}(\textbf{x})^T\textbf{y} \\
+\textbf{b} - \textbf{g}(\textbf{x})-\textbf{m}
+\end{bmatrix} ''')
 
+#The following cell prints \\(\begin{bmatrix}
+#\textbf{d}^x \\ \textbf{d}^y
+#\end{bmatrix}\\).)
 S = sympy.diag(*[(b_i - g_i)/y_i for b_i, g_i, y_i in zip(b, g, Y)])
 LHS = sympy.Matrix([[Q, J.T], [J, S]])
 
@@ -149,7 +165,8 @@ while not done and k < 14:
     mu_value *= gamma
     k +=1
     if math.sqrt(sum(map(lambda i : l*i * l*i, solv_eval[:len(X)]))) <= epsilon:
-        st.write(f"We're close enough as ||lambda*d^x|| <= epsilon. {round(dnorm, 6)} <= {epsilon}")
+        st.write("""
+        We're close enough as $\mid \mid \lambda$ **d**$^x \mid \mid \leq \epsilon$, indeed, """, round(dnorm, 6), """$\leq$""", epsilon, ".")
         done = True
 df = pd.DataFrame(data, columns=alist)
 st.write(df)
@@ -157,7 +174,7 @@ st.write(df)
     #    st.write(l_max, type(l_max), alpha, beta, gamma, epsilon, mu_value)
 rounded_point = [round(i, 4) for i in point]
 st.write(f"The approximately optimal point is: {rounded_point}")
-st.write(f"It has a value of: {f.subs([*zip(X, point[:len(X)])])}")
+st.write(f"It has a value of: {round(f.subs([*zip(X, point[:len(X)])]),4)}.")
 #%matplotlib inline
 #xspace = np.linspace(-5, 5, 200)
 #yspace = np.linspace(-5, 5, 200)
