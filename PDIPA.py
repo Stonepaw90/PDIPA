@@ -14,7 +14,6 @@ import sympy
 import math
 import streamlit as st
 from functools import reduce
-from bokeh.plotting import figure
 
 
 # Edit these meta values if necessary.
