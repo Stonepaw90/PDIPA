@@ -136,7 +136,7 @@ RHS = sympy.Matrix([RHST,RHSB])
 
 st.latex(r'''\text{We need to solve for } \textbf{d}^x, \textbf{d}^y \text{ using (15.14): } \begin{bmatrix}
 \textbf{Q} & \textbf{J}(\textbf{x})^T\\
-\textbf{J}(\textbf{x}) & \textbf{S}
+\textbf{J}(\textbf{x}) & -\textbf{S}
 \end{bmatrix}\begin{bmatrix}
 \textbf{d}^x \\ \textbf{d}^y
 \end{bmatrix}
