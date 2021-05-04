@@ -44,7 +44,7 @@ else:
     option = 2
 if option == 1:
     st.latex(r'''\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}''')
-    st.latex(r'''\text{s.t.  } x_2 - x_1^{0.5} \leq 0 ''')
+    st.latex(r'''\text{s.t.  } x_2 - x_1^{0.5} \leq 0''')
     st.latex(r'''-x_2 + x_1^{1.5} \leq 0 ''')
     x1,x2, mu = sympy.symbols('x1 x2 mu', real = True)
     X = sympy.Matrix([x1, x2])
@@ -72,7 +72,7 @@ if option == 1:
     mu_value = float(mu_input)
 elif option == 2:
     st.latex(r'''\text{max  } 10x-e^x''')
-    st.latex(r''' \text{s.t.   } x \leq 2''')
+    st.latex(r'''\text{s.t.   } x \leq 2   ''')
     x1, x2, mu = sympy.symbols('x1 x2 mu', real=True)
     X = sympy.Matrix([x1])
     y1 = sympy.symbols('y1', real=True)
@@ -228,7 +228,7 @@ if st.button("Show symbolic matrices."):
 col4, col5 = st.beta_columns(2)
 
 col_help = 0
-def latex_matrix(name, matrix_for_me, col_bool):
+def latex_matrix(name, matrix_for_me, col_bool, col_use1, col_use2):
     global col_help
     latex_string = name + " = " + "\\begin{bmatrix}  "
     shape_tuple = matrix_for_me.shape
@@ -240,10 +240,10 @@ def latex_matrix(name, matrix_for_me, col_bool):
     try:
         if col_bool:
             if col_help % 2 == 0:
-                with col4:
+                with col_use1:
                     st.latex(latex_string)
             else:
-                with col5:
+                with col_use2:
                     st.latex(latex_string)
         else:
             st.latex(latex_string)
@@ -262,21 +262,22 @@ def latex_matrix_sum(name, m1, m2, m3):
     latex_string = latex_string[:-2] + "  \\end{bmatrix}"
     st.latex(latex_string)
 if st.button("Details of one numerical step."):
+    col6, col7 = st.beta_columns(2)
+
+    col_help = 0
     mu_value = 1.0
     point = [0.5, 0.6, 5.0, 10.0]
     st.latex("\\text{We solve (15.14) numerically at the point } (\\textbf{x}_0, \\textbf{y}_0).")
-
-
     matrix_list = [H, 1, Q, gradient(f, X), J.T * Y]
     matrix_string = ["\\nabla^2 f(\\textbf{x}_0) ", "0", "Q", "\\nabla f(\\textbf{x}_0)", "J(\\textbf{x}_0)^T\\textbf{y}_0"]
     for i in range(len(matrix_list)):
         if i == 1:
             for j in range(len(g)):
                 g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-                latex_matrix("\\nabla^2 g_" + str(j+1) + " (\\textbf{x}_0) ", g_subs, True)
+                latex_matrix("\\nabla^2 g_" + str(j+1) + " (\\textbf{x}_0) ", g_subs, True, col6, col7)
         else:
             subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-            latex_matrix(matrix_string[i], subss, True)
+            latex_matrix(matrix_string[i], subss, True, col6, col7)
     b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
@@ -284,9 +285,9 @@ if st.button("Details of one numerical step."):
     LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     st.write(
         "We eventually get (15.14) numerically, with the coefficient matrix on the left and the right hand side (RHS) on the right.")
-    latex_matrix("\\text{Coefficient Matrix}", LHS_subs, False)
+    latex_matrix("\\text{Coefficient Matrix}", LHS_subs, False, col6, col7)
     RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-    latex_matrix("RHS", RHS_subs, False)
+    latex_matrix("RHS", RHS_subs, False, col6, col7)
     st.write("The solution to this is:")
     solv_temp = LHS_subs.LUsolve(RHS_subs)
     if option == 1:
@@ -295,6 +296,9 @@ if st.button("Details of one numerical step."):
         st.latex(sympy.latex(sympy.Matrix(["d^x", "d_y"])) + "= " + sympy.latex(solv_temp))
 
 if st.button(f"(Advanced) Show numeric steps for all {k} iterations."):
+    #col8, col9 = st.beta_columns(2)
+
+    #col_help = 0
     for i in range(5):
         st.write("\n")
     df1 = df.drop(columns = ['k', '||d||', 'lambda', 'f(x)'])
@@ -302,9 +306,11 @@ if st.button(f"(Advanced) Show numeric steps for all {k} iterations."):
         mu_value = df_row[0]
         point = list(df_row[1:])
         st.latex(f"\\text{{We solve (15.14) numerically at the next points, }} (\\textbf{{x}}_{index}, \\textbf{{y}}_{index}).")
-        col4, col5 = st.beta_columns(2)
-        col_help = 0
+        #col4, col5 = st.beta_columns(2)
+        #col_help = 0
+        col8, col9 = st.beta_columns(2)
 
+        col_help = 0
         matrix_list = [H, 1, Q, gradient(f, X), J.T * Y]
         matrix_string = [f"\\nabla^2 f(\\textbf{{x}}_{index}) ", "0", "Q", f"\\nabla f(\\textbf{{x}}_{index})",
                          f"J(\\textbf{{x}}_{index})^T\\textbf{{y}}_{index}"]
@@ -312,19 +318,19 @@ if st.button(f"(Advanced) Show numeric steps for all {k} iterations."):
             if i == 1:
                 for j in range(len(g)):
                     g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-                    latex_matrix("\\nabla^2 g_" + str(j + 1) + f" (\\textbf{{x}}_{index}) ", g_subs, True)
+                    latex_matrix("\\nabla^2 g_" + str(j + 1) + f" (\\textbf{{x}}_{index}) ", g_subs, True, col8, col9)
             else:
                 subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-                latex_matrix(matrix_string[i], subss, True)
+                latex_matrix(matrix_string[i], subss, True, col8, col9)
         b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
         g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
         m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
         latex_matrix_sum("\\textbf{b}-\\textbf{g}-\\textbf{m}", b_eval, g_eval, m_eval)
         LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
         st.write("We eventually get (15.14) numerically, with the coefficient matrix on the left and the right hand side (RHS) on the right.")
-        latex_matrix("\\text{Coefficient Matrix}", LHS_subs, False)
+        latex_matrix("\\text{Coefficient Matrix}", LHS_subs, False, col8, col9)
         RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-        latex_matrix("\\text{RHS}", RHS_subs, False)
+        latex_matrix("\\text{RHS}", RHS_subs, False, col8, col9)
         st.write("The solution to this is:")
         solv_temp = LHS_subs.LUsolve(RHS_subs)
         st.latex(sympy.latex(solv_temp))
