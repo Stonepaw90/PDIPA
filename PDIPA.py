@@ -143,8 +143,9 @@ k = 0
 done = False
 data = []
 shortcut = False
-if st.button("Use lamda_max = (2-x)/d^x shortcut?"):
-    shortcut = True
+if option == 2:
+    if st.button("Use lamda_max = (2-x)/d^x shortcut?"):
+        shortcut = True
 while not done and k < 14:
     #st.write("1")
     solv_eval = solv.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
