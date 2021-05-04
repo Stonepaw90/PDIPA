@@ -43,7 +43,9 @@ if option.split(' ')[1] == "10":
 else:
     option = 2
 if option == 1:
-    st.latex(r'''\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}\\ \text{s.t.  } x_2 - x_1^{0.5} \leq 0 \\ -x_2 + x_1^{1.5} \leq 0 ''')
+    st.latex(r'''\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}''')
+    st.latex(r'''\text{s.t.  } x_2 - x_1^{0.5} \leq 0 ''')
+    st.latex(r'''-x_2 + x_1^{1.5} \leq 0 ''')
     x1,x2, mu = sympy.symbols('x1 x2 mu', real = True)
     X = sympy.Matrix([x1, x2])
     y1, y2 = sympy.symbols('y1 y2', real = True)
@@ -70,7 +72,8 @@ if option == 1:
     point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
     mu_value = float(mu_input)
 elif option == 2:
-    st.latex(r'''\text{max  } 10x-e^x \\ \text{s.t.   } x \leq 2   ''')
+    st.latex(r'''\text{max  } 10x-e^x'')
+    st.latex(r''' \text{s.t.   } x \leq 2'''
     x1, x2, mu = sympy.symbols('x1 x2 mu', real=True)
     X = sympy.Matrix([x1])
     y1 = sympy.symbols('y1', real=True)
