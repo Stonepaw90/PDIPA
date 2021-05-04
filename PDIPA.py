@@ -73,7 +73,7 @@ if option == 1:
     mu_value = float(mu_input)
 elif option == 2:
     st.latex(r'''\text{max  } 10x-e^x'')
-    st.latex(r''' \text{s.t.   } x \leq 2'''
+    st.latex(r''' \text{s.t.   } x \leq 2''')
     x1, x2, mu = sympy.symbols('x1 x2 mu', real=True)
     X = sympy.Matrix([x1])
     y1 = sympy.symbols('y1', real=True)
