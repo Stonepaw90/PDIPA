@@ -295,30 +295,25 @@ if st.button("Details of one numerical step."):
     else:
         st.latex(sympy.latex(sympy.Matrix(["d^x", "d_y"])) + "= " + sympy.latex(solv_temp))
 
-if st.button(f"(Advanced) Show numeric steps for all {k} iterations."):
-    #col8, col9 = st.beta_columns(2)
-
-    #col_help = 0
-    for i in range(5):
-        st.write("\n")
+if st.button(f"(Advanced) Show numeric steps for all remaining {k-1} iterations."):
     df1 = df.drop(columns = ['k', '||d||', 'lambda', 'f(x)'])
     for index, df_row in df1.iterrows():
         mu_value = df_row[0]
-        point = list(df_row[1:])
-        st.latex(f"\\text{{We solve (15.14) numerically at the next points, }} (\\textbf{{x}}_{index}, \\textbf{{y}}_{index}).")
+        point = list(df_row)
+        st.latex(f"\\text{{We solve (15.14) numerically at the next point, }} (\\textbf{{x}}_{index+1}, \\textbf{{y}}_{index+1}).")
         #col4, col5 = st.beta_columns(2)
         #col_help = 0
         col8, col9 = st.beta_columns(2)
 
         col_help = 0
         matrix_list = [H, 1, Q, gradient(f, X), J.T * Y]
-        matrix_string = [f"\\nabla^2 f(\\textbf{{x}}_{index}) ", "0", "Q", f"\\nabla f(\\textbf{{x}}_{index})",
-                         f"J(\\textbf{{x}}_{index})^T\\textbf{{y}}_{index}"]
+        matrix_string = [f"\\nabla^2 f(\\textbf{{x}}_{index+1}) ", "0", "Q", f"\\nabla f(\\textbf{{x}}_{index+1})",
+                         f"J(\\textbf{{x}}_{index+1})^T\\textbf{{y}}_{index+1}"]
         for i in range(len(matrix_list)):
             if i == 1:
                 for j in range(len(g)):
                     g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-                    latex_matrix("\\nabla^2 g_" + str(j + 1) + f" (\\textbf{{x}}_{index}) ", g_subs, True, col8, col9)
+                    latex_matrix("\\nabla^2 g_" + str(j + 1) + f" (\\textbf{{x}}_{index+1}) ", g_subs, True, col8, col9)
             else:
                 subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
                 latex_matrix(matrix_string[i], subss, True, col8, col9)
