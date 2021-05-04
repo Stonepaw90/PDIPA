@@ -150,7 +150,7 @@ st.latex(r'''\text{We need to solve for } \textbf{d}^x, \textbf{d}^y \text{ usin
 #\textbf{d}^x \\ \textbf{d}^y
 #\end{bmatrix}\\).)
 S = sympy.diag(*[(b_i - g_i)/y_i for b_i, g_i, y_i in zip(b, g, Y)])
-LHS = sympy.Matrix([[Q, J.T], [J, S]])
+LHS = sympy.Matrix([[Q, J.T], [J, -S]])
 
 
 
@@ -166,8 +166,8 @@ while not done and k < 14:
     assert(all([y_i + l_max*dy_i >= 0 for y_i, dy_i in zip(point[-len(Y):], solv_eval[-len(Y):])]), "Negative y value found from backtracking!")
     l= l_max
     all_constraints_satisfied = False
-    violation = False
     while not all_constraints_satisfied:
+        violation = False
         test_x = [i+l*j for i, j in zip(point[:len(X)], solv_eval[:len(X)])]
         for g_i, b_i in zip(g, b):
             g_eval = g_i.subs([*zip(all_vars[:len(X)], test_x)])
