@@ -142,11 +142,18 @@ solv = LHS.LUsolve(RHS)
 k = 0
 done = False
 data = []
+shortcut = False
+if st.button("Use lamda_max = (2-x)/d^x shortcut?"):
+    shortcut = True
 while not done and k < 14:
     #st.write("1")
     solv_eval = solv.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     f_eval = f.subs([*zip(X, point[:len(X)])])
-    l_max =min(1,min([y_i/-dy_i if dy_i < 0 else 1 for y_i, dy_i in zip(point[-len(Y):], solv_eval[-len(Y):])]))
+    l_max1 =min(1,min([y_i/-dy_i if dy_i < 0 else 1 for y_i, dy_i in zip(point[-len(Y):], solv_eval[-len(Y):])]))
+    if option ==2 and shortcut:
+        l_max = min(l_max1, (2-point[0])/solv_eval[0])
+    else:
+        l_max = l_max1
     assert(all([y_i + l_max*dy_i >= 0 for y_i, dy_i in zip(point[-len(Y):], solv_eval[-len(Y):])]))
     #st.write("2")
     l= l_max
