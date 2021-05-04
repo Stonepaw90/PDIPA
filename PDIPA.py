@@ -273,8 +273,8 @@ if st.button("Details of one numerical step."):
     col6, col7 = st.beta_columns(2)
 
     col_help = 0
-    mu_value = 1.0
-    point = [0.5, 0.6, 5.0, 10.0]
+    mu_value = mu_input
+    point = input_point
     st.latex("\\text{We solve (15.14) numerically at the point } (\\textbf{x}_0, \\textbf{y}_0).")
     matrix_list = [H, 1, Q, gradient(f, X), J.T * Y]
     matrix_string = ["\\nabla^2 f(\\textbf{x}_0) ", "0", "Q", "\\nabla f(\\textbf{x}_0)", "J(\\textbf{x}_0)^T\\textbf{y}_0"]
