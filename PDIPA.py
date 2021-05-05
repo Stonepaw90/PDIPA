@@ -98,7 +98,7 @@ elif option == 2:
     point = [float(x1_input), float(y1_input)]
     mu_value = float(mu_input)
 s = sympy.Matrix([b[i] - g[i].subs([*zip(X, point[:len(X)])]).evalf() for i in range(len(g))])
-
+initial_point = point.copy()
 assert all([i >= 0 for i in s]), f"The initial point does not satisfy the constraints. They have negative slacks [s1, s2] of {[*s]}."
 assert all([i >= 0 for i in point[len(Y):]]), f"Choose positive y."
 
