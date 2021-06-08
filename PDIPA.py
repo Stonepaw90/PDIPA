@@ -32,7 +32,7 @@ beta = st.sidebar.number_input("Beta", 0.9, step=0.1)
 epsilon = st.sidebar.number_input("Epsilon", 0.001, step=0.001, format="%f")
 gamma = st.sidebar.number_input("Gamma", 0.1, step=0.1)
 
-st.title("Primal-dual Interior Point Algorithm")
+st.title("Primal-dual Interior Point Algorithm Edited")
 st.header("By Abraham Holleran")
 st.write(
     "Written from the book [Linear and Convex Optimization](https://www.wiley.com/go/veatch/convexandlinearoptimization) under the supervision of the author, Dr. Michael Veatch.")
