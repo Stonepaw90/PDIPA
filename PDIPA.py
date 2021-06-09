@@ -20,7 +20,6 @@ import math
 import streamlit as st
 from functools import reduce
 
-
 #import os
 #os.system(r"cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts | streamlit run PDIPA.py")
 #os.system("streamlit run PDIPA.py")
@@ -32,22 +31,32 @@ alpha = 0.8  # step size parameter for getting away from constraint
 beta = 0.9  # step size it parameter
 epsilon = 0.001  # erative parameter
 gamma = 0.1  # duality gapstopping tolerance
-variable_dict = {"shortcut": False, "show_symbo": False, "show_numeric": False, "show_all_numeric": False}
+variable_dict = {"shortcut": False, "show_symbo": False, "show_numeric": False, "show_all_numeric": False, "feasible": False, "pos": False}
 
 # Carefully put your variables, functions, and constraints here.
 
-st.sidebar.button("Re Run")
-#st.sidebar.write("H")
-st.sidebar.write(r"""$\alpha$""")
-alpha = st.sidebar.number_input("step size parameter for getting away from constraint", 0.8, step=0.01)
-st.sidebar.write(r"$\beta$")
-beta = st.sidebar.number_input("Step size parameter", 0.9, step=0.01)
-#st.sidebar.number_input()
-st.sidebar.write("""$\epsilon$""")
-epsilon = st.sidebar.number_input("How close to get", 0.001, step=0.001, format="%f")
-st.sidebar.write("""$\gamma$""")
-gamma = st.sidebar.number_input("Duality gap stopping tolerance", 0.1, step=0.01)
-variable_dict["shortcut"] = st.sidebar.checkbox("Example 9: Use ratio rest (not backtracking)")
+#st.sidebar.button("Re Run")
+#alpha: Step size multiplier. Each dual variable is reduced by no more than a factor of 1 - \alpha. 0 < \alpha < 1.
+#beta: Backtracking multiplier. If a constraint is violated, the step size is multiplied by \beta. 0 < \beta < 1.
+#epsilon: Stopping criterion. Stop if the length of the last step, \lambda||dx|| < \epsilon. \epsilon > 0.
+#Gamma: Duality gap. The complimentary slackness constraint violation \mu is multiplied by \gamma each iteration.
+#
+#Please add the heading Parameters above alpha and  move the definitions to below their values. If easy, separate the parameters with horizontal lines.
+st.sidebar.header("Parameters")
+st.sidebar.write(r"""$\alpha$: **Step size Multiplier**. Each dual variable is reduced by no more than a factor of $1 - \alpha$.""")
+alpha = st.sidebar.number_input(r"""""", value = 0.8, step=0.01,min_value = 0.0, max_value = 0.999)
+#st.sidebar.markdown("""---""")
+st.sidebar.write(r"$\beta$: **Backtracking multiplier**. If a constraint is violated, the step size is multiplied by $\beta$.")
+beta = st.sidebar.number_input(r"""""", value = 0.9, step=0.01,min_value = 0.0, max_value = 0.999)
+#st.sidebar.markdown("""---""")
+st.sidebar.write("""$\epsilon$: **Stopping criterion**. Stop the algorithm once $\lambda||d^x|| < \epsilon$.""")
+epsilon = st.sidebar.number_input(r"""""", value = 0.001, step=0.001, format="%f", min_value = 0.00001)
+#st.sidebar.markdown("""---""")
+st.sidebar.write("""$\gamma$: **Duality gap**. The complimentary slackness constraint violation $\mu$ is multiplied by $\gamma$ each iteration.""")
+gamma = st.sidebar.number_input(r"""""", value = 0.1, step=0.01)
+#st.sidebar.markdown("""---""")
+variable_dict["shortcut"] = st.sidebar.checkbox("For example 9: Use ratio test (not backtracking). If the ratio test is used,"
+                                                "when the step lambda_max violates the constraint, it is reduced to satisfy the contraint with equality.")
 st.title("Primal-dual Interior Point Algorithm")
 st.header("By Abraham Holleran")
 st.write(
@@ -61,11 +70,7 @@ if option.split(' ')[1] == "10":
 elif option.split(' ')[1] == "9":
     option = 2
 if option == 1:
-    #st.write(r'''\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}''' + "\n" + r'''\text{s.t.  } x_2 - x_1^{0.5} \leq 0''' +  "\n" + r'''-x_2 + x_1^{1.5} \leq 0''')
-    #st.latex(
-    #    "\\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}")
-    #st.latex("\\text{s.t.  } x_2 - x_1^{0.5} \\leq 0")
-    #st.latex("-x_2 + x_1^{1.5} \\leq 0")
+    #st.latex(r'''\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}\\ \text{s.t.  } x_2 - x_1^{0.5} \leq 0 \\ -x_2 + x_1^{1.5} \leq 0 ''')
     st.latex(r"""\begin{aligned}
     &\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}& \\
     &\text{s.t.  } x_2 - x_1^{0.5} \leq 0& \\
@@ -85,21 +90,37 @@ if option == 1:
     alist = ["k", "mu", "x1", "x2", "y1", "y2", "f(x)", "lambda", "d^x", """||l*d^x||"""]
     st.write("Please write your (feasible) initial point.")
     col1, col2, col3, col4, col5 = st.beta_columns(5)
-    x1_input = col1.text_input("x1", "0.5")
-    x2_input = col2.text_input("x2", "0.6")
-    y1_input = col3.text_input("y1", "5.0")
-    y2_input = col4.text_input("y2", "10.0")
-    mu_input = col5.text_input("mu", "1.0")
+    #while not (variable_dict["feasible"] and variable_dict["pos"]):
+    variable_dict["feasible"] = False
+    variable_dict["pos"] = False
+    col1.write(r"""$x_1$""")
+    x1_input = col1.number_input(value = 0.5, label = "", key = "x1")
+    col2.write(r"""$x_2$""")
+    x2_input = col2.number_input(value = 0.6, label = "", key = "x2")
+    col3.write(r"""$y_1 \geq 0$""")
+    y1_input = col3.number_input(value = 5.0, label = "", min_value = 0.0, key = "y1")
+    col4.write(r"""$y_2 \geq 0$""")
+    y2_input = col4.number_input(value = 10.0, label = "", min_value = 0.0, key = "y2")
+    col5.write(r"""$\mu > 0$""")
+    mu_value = col5.number_input(value = 1.0, label = "", min_value=0.01, key = "mu")
+    #point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
+    point = [x1_input,x2_input, y1_input, y2_input]
+    #s = sympy.Matrix([b[i] - g[i].subs([*zip(X, point[:len(X)])]).evalf() for i in range(len(g))])
+    #if all([i >= 0 for i in s]):
+    #    variable_dict["feasible"] = True
+    #else:
+    #    st.write(r"""The initial point does not satisfy the constraints. The slacks \\(s_1,s_2\\) = """, tuple([*s]),  r"""are negative.""")
+    #if all([i >= 0 for i in point[len(Y):]]):
+    #    variable_dict["pos"] = True
+    #else:
+    #    st.latex(r"""Please use nonnegative $y$ values.""")
 
-    point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
-    mu_value = float(mu_input)
 elif option == 2:
-    #st.latex(r''''')
-    #st.latex(r'''\text{s.t.   } x \leq 2   ''')
     st.latex(r"""\begin{aligned}
     &\text{max  } 10x-e^x& \\
     &\text{s.t.     } x \leq 2&
     \end{aligned} """)
+    #st.latex(r'''\text{max  } 10x-e^x \\ \text{s.t.   } x \leq 2   ''')
     x, mu = sympy.symbols('x mu', real=True)
     X = sympy.Matrix([x])
     y = sympy.symbols('y', real=True)
@@ -165,7 +186,9 @@ solv = LHS.LUsolve(RHS)
 k = 0
 done = False
 data = []
-st.write(f"Shortcut is ", "on" if variable_dict["shortcut"] else "off")
+if option == 2:
+    st.write(f"Example 9 only: method for choosing step size is ", "a ratio test." if variable_dict["shortcut"] else "backtracking. (default)")
+
 while not done and k < 14:
     solv_eval = solv.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     f_eval = f.subs([*zip(X, point[:len(X)])])
@@ -183,7 +206,7 @@ while not done and k < 14:
     while not all_constraints_satisfied:
         violation = False
         iter += 1
-        assert iter < 10, "Too many iterations"
+        assert iter < 20, "The program is running too many iterations. Try changing your initial point or lowering your alpha or beta parameters."
         test_x = [i + l * j for i, j in zip(point[:len(X)], solv_eval[:len(X)])]
         for g_i, b_i in zip(g, b):
             g_eval = g_i.subs([*zip(all_vars[:len(X)], test_x)])
@@ -302,14 +325,14 @@ def latex_matrix_sum(name, m1, m2, m3):
 
 
 if st.button("Details of one iteration."):
-    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0).")
+    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0). We show 4 significant figures.")
     col6, col7 = st.beta_columns(2)
     col_help = 0
     mu_value = mu_input
     point = input_point
-    matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
-    matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
-                     "J(\\textbf{x})^T\\textbf{y}"]
+    #matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
+    #matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
+    #                 "J(\\textbf{x})^T\\textbf{y}"]
     matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y, RHSB]
     matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
                      "J(\\textbf{x})^T\\textbf{y}", "\\textbf{b}-\\textbf{g}-\\textbf{m}"]
@@ -359,9 +382,9 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
         col8, col9 = st.beta_columns(2)
 
         col_help = 0
-        matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
-        matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
-                         "J(\\textbf{x})^T\\textbf{y}"]
+        #matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
+        #matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
+        #                 "J(\\textbf{x})^T\\textbf{y}"]
         matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y, RHSB]
         matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
                          "J(\\textbf{x})^T\\textbf{y}", "\\textbf{b}-\\textbf{g}-\\textbf{m}"]
@@ -394,6 +417,8 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
         st.write("The solution to this is:")
         solv_temp = LHS_subs.LUsolve(RHS_subs)
         st.latex(sympy.latex(solv_temp))
+        st.markdown("""---""")
+
 # xspace = np.linspace(-5, 5, 200)
 # yspace = np.linspace(-5, 5, 200)
 # Xmesh, Ymesh = np.meshgrid(xspace, yspace)
