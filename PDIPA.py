@@ -67,8 +67,8 @@ if option == 1:
     st.latex("\\text{s.t.  } x_2 - x_1^{0.5} \\leq 0")
     st.latex("-x_2 + x_1^{1.5} \\leq 0")
     st.latex(r"""\begin{aligned}
-    5 & 7 \\
-    8 & x^2
+    5 & 7533535 \\
+    8 533535    &      x^2
     \end{aligned}""")
     x1, x2, mu = sympy.symbols('x1 x2 mu', real=True)  # Sympy requires that variables be initiated
     X = sympy.Matrix([x1, x2])
