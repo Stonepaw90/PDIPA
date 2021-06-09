@@ -6,8 +6,13 @@
 
 # Anaconda
 # cd /D C:\Users\Abraham\miniconda3\envs\snowflakes\Scripts
+# Laptop: cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts
 # streamlit run PDIPA.py
 
+#In terminal
+
+#cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts
+# streamlit run PDIPA.py
 import numpy as np
 import pandas as pd
 import sympy
@@ -15,6 +20,10 @@ import math
 import streamlit as st
 from functools import reduce
 
+
+#import os
+#os.system(r"cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts | streamlit run PDIPA.py")
+#os.system("streamlit run PDIPA.py")
 st.set_page_config(layout="wide")
 # Edit these meta values if necessary.
 
@@ -23,19 +32,29 @@ alpha = 0.8  # step size parameter for getting away from constraint
 beta = 0.9  # step size it parameter
 epsilon = 0.001  # erative parameter
 gamma = 0.1  # duality gapstopping tolerance
+variable_dict = {"shortcut": False, "show_symbo": False, "show_numeric": False, "show_all_numeric": False}
 
 # Carefully put your variables, functions, and constraints here.
 
 st.sidebar.button("Re Run")
-alpha = st.sidebar.number_input("Alpha", 0.8, step=0.1)
-beta = st.sidebar.number_input("Beta", 0.9, step=0.1)
-epsilon = st.sidebar.number_input("Epsilon", 0.001, step=0.001, format="%f")
-gamma = st.sidebar.number_input("Gamma", 0.1, step=0.1)
-
-st.title("Primal-dual Interior Point Algorithm Edited")
+#st.sidebar.write("H")
+st.sidebar.write(r"""$\alpha$""")
+alpha = st.sidebar.number_input("step size parameter for getting away from constraint", 0.8, step=0.01)
+st.sidebar.write(r"$\beta$")
+beta = st.sidebar.number_input("Step size parameter", 0.9, step=0.01)
+#st.sidebar.number_input()
+st.sidebar.write("""$\epsilon$""")
+epsilon = st.sidebar.number_input("How close to get", 0.001, step=0.001, format="%f")
+st.sidebar.write("""$\gamma$""")
+gamma = st.sidebar.number_input("Duality gap stopping tolerance", 0.1, step=0.01)
+variable_dict["shortcut"] = st.sidebar.checkbox("Example 9: Use ratio rest (not backtracking)")
+st.title("Primal-dual Interior Point Algorithm")
 st.header("By Abraham Holleran")
 st.write(
     "Written from the book [Linear and Convex Optimization](https://www.wiley.com/go/veatch/convexandlinearoptimization) under the supervision of the author, Dr. Michael Veatch.")
+
+st.write("Select a problem in the dropdown, then enter the initial conditions below and adjust the parameters on the left. The problem is re-solved after any change. "
+         "After solving, you can look at the equations or the numerical steps.")
 option = st.selectbox('Which problem do you want to optimize?', ('Example 9 (1 variable)', 'Example 10 (2 variables)'))
 if option.split(' ')[1] == "10":
     option = 1
@@ -56,31 +75,31 @@ if option == 1:
     g2 = -x2 + x1 ** (1.5)
     g = sympy.Matrix([g1, g2])
     b = sympy.Matrix([0, 0])
-    alist = ["k", "mu", "x1", "x2", "y1", "y2", "f(x)", "lambda", "||d||"]
+    alist = ["k", "mu", "x1", "x2", "y1", "y2", "f(x)", "lambda", "d^x", """||l*d^x||"""]
     st.write("Please write your (feasible) initial point.")
     col1, col2, col3, col4, col5 = st.beta_columns(5)
     x1_input = col1.text_input("x1", "0.5")
     x2_input = col2.text_input("x2", "0.6")
     y1_input = col3.text_input("y1", "5.0")
     y2_input = col4.text_input("y2", "10.0")
-    mu_input = col5.text_input("initial mu", "1.0")
+    mu_input = col5.text_input("mu", "1.0")
 
     point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
     mu_value = float(mu_input)
 elif option == 2:
     st.latex(r'''\text{max  } 10x-e^x \\ \text{s.t.   } x \leq 2   ''')
-    x1, x2, mu = sympy.symbols('x1 x2 mu', real=True)
-    X = sympy.Matrix([x1])
-    y1 = sympy.symbols('y1', real=True)
-    Y = sympy.Matrix([y1])
-    all_vars = sympy.Matrix([x1, y1])
+    x, mu = sympy.symbols('x mu', real=True)
+    X = sympy.Matrix([x])
+    y = sympy.symbols('y', real=True)
+    Y = sympy.Matrix([y])
+    all_vars = sympy.Matrix([x, y])
     f, g1 = sympy.symbols('f g1 ', cls=sympy.Function)
     s1 = sympy.symbols('s1', real=True)  # one s_i for each g_i, b_i
-    f = 10 * x1 - sympy.exp(x1)
-    g1 = x1
+    f = 10 * x - sympy.exp(x)
+    g1 = x
     g = sympy.Matrix([g1])
     b = sympy.Matrix([2])
-    alist = ["k", "mu", "x", "y", "f(x)", "lambda", "||d||"]
+    alist = ["k", "mu", "x", "y", "f(x)", "lambda", "d^x", "||l*d^x||"]
     st.write("Please write your (feasible) initial point.")
     col1, col2, col3 = st.beta_columns(3)
     point = [1, 1]
@@ -110,9 +129,8 @@ Q = -H + sum_M
 m = sympy.Matrix([mu / y_i for y_i in Y])
 RHSB = b - g - m
 J = g.jacobian(X)
-RHST = gradient(f, X).T - J.T * Y
+RHST = - J.T * Y + gradient(f, X).T
 RHS = sympy.Matrix([RHST, RHSB])
-
 st.latex(r'''\text{We need to solve for } \textbf{d}^x, \textbf{d}^y \text{ using (15.14): } \begin{bmatrix}
 \textbf{Q} & \textbf{J}(\textbf{x})^T\\
 \textbf{J}(\textbf{x}) & -\textbf{S}
@@ -135,19 +153,11 @@ solv = LHS.LUsolve(RHS)
 k = 0
 done = False
 data = []
-shortcut = False
-# Store a whole dictionary
-variable_dict = {"shortcut": False, "show_symbo": False, "show_numeric": False, "show_all_numeric": False}
-if option == 2:
-    if st.button("Use lambda_max = (2-x)/d^x shortcut?"):
-        variable_dict["shortcut"] = True
-        shortcut = True
-    st.write(f"Shortcut is ", "on" if shortcut else "off")
+st.write(f"Shortcut is ", "on" if variable_dict["shortcut"] else "off")
 while not done and k < 14:
     solv_eval = solv.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     f_eval = f.subs([*zip(X, point[:len(X)])])
     l_max1 = min(1, min([y_i / -dy_i if dy_i < 0 else 1 for y_i, dy_i in zip(point[-len(Y):], solv_eval[-len(Y):])]))
-    # if option == 2 and shortcut:
     if option == 2 and "shortcut" in variable_dict and variable_dict["shortcut"]:
         l_max = min(l_max1, (2 - point[0]) / solv_eval[0])
     else:
@@ -177,41 +187,55 @@ while not done and k < 14:
     # st.write("3")
     dnorm = math.sqrt(sum(map(lambda i: l * i * l * i, solv_eval[:len(X)])))
     mu_scientific = "{:2.1E}".format(mu_value)
-    value_list = [k, mu_scientific, *[round(float(i), 4) for i in point], round(f_eval, 3), round(l, 5), dnorm]
+    dpowerx = [round(float(io),4) for io in solv_eval[:len(X)]]
+    if len(dpowerx) ==1:
+        dpowerx = dpowerx[0]
+    else:
+        dpowerx = tuple(dpowerx)
+    value_list = [k, mu_scientific, *[round(float(i), 4) for i in point], round(f_eval, 3), round(l, 5),
+                  dpowerx, round(dnorm,4)]
     data.append(value_list)
     point = [i + l * j for i, j in zip(point, solv_eval)]
     mu_value *= gamma
     k += 1
     # st.write("4")
-    if math.sqrt(sum(map(lambda i: l * i * l * i, solv_eval[:len(X)]))) <= epsilon:
-        st.write("""
-        We're close enough as $\mid \mid \lambda$ **d**$^x \mid \mid \leq \epsilon$, indeed, """, round(dnorm, 6),
-                 """$\leq$""", epsilon, ".")
+    if dnorm < epsilon:
         done = True
+
+last_list = [k, "-", *[round(float(i), 4) for i in point], round(f.subs([*zip(X, point[:len(X)])]), 4), "-",
+                  "-", "-"]
+data.append(last_list)
 df = pd.DataFrame(data, columns=alist)
 st.write(df)
-# if k >= 5:
-#    st.write(l_max, type(l_max), alpha, beta, gamma, epsilon, mu_value)
-rounded_point = [round(i, 4) for i in point]
-st.write(f"The approximately optimal point is: {rounded_point}")
-st.write(f"It has a value of: {round(f.subs([*zip(X, point[:len(X)])]), 4)}.")
-
-if st.button("Show symbolic matrices."):
+st.write("""We stopped after iteration """, str(k), """ as $\mid \mid \lambda$ **d**$^x \mid \mid <
+ \epsilon$, indeed, """, str(round(dnorm, 6)),
+         """$<$""", str(epsilon), ".")
+if st.button("Show equations."):
     columns = st.beta_columns(2)
     col_help2 = 0
-    matrix_list = [H, None, Q, gradient(f, X), J.T * Y, RHSB]
-    matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
-                     "J(\\textbf{x})^T\\textbf{y}","\\textbf{b}-\\textbf{g}-\\textbf{m}"]
+    #matrix_list = [H, None, Q, gradient(f, X).T, J.T * Y, RHSB]
+
+    matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y, RHSB]
+    matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
+                     "J(\\textbf{x})^T\\textbf{y}", "\\textbf{b}-\\textbf{g}-\\textbf{m}"]
+
+    #matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
+    #                 "J(\\textbf{x})^T\\textbf{y}","\\textbf{b}-\\textbf{g}-\\textbf{m}"]
     for i,j in zip(matrix_list, matrix_string):
         with columns[col_help2 % 2]:
             col_help2 += 1
             if not i:
                 for g_var in range(len(g)):
-                    st.latex("\\nabla^2 g_" + str(g_var + 1) + " (\\textbf{x}) =" + sympy.latex(g[g_var]))
+                    underscore = "_"
+                    my_string = f"\\nabla^2 g{underscore +str(g_var+1) if option == 1 else str()} (\\textbf{{x}}) ="
+                    st.latex(my_string + sympy.latex(sympy.hessian(g[g_var], X)))
+
             else:
                  st.latex(j + " = " + sympy.latex(i))
+    st.write("Equation 15.14 is:")
     if option == 2:
         st.latex(sympy.latex(LHS) + sympy.latex(sympy.Matrix(["d^x", "d_y"])) + "= " + sympy.latex(RHS))
+        st.write("With solution:")
         st.latex(sympy.latex(sympy.Matrix(["d^x", "d_y"])) + " = " + sympy.latex(solv))
     else:
         st.latex(
@@ -244,12 +268,17 @@ def latex_matrix(name, matrix_for_me, col_bool, col_use1, col_use2):
             st.latex(latex_string)
     except:
         st.write("Something broke")
+
     col_help += 1
     # print(latex_string)
 
 
 def latex_matrix_sum(name, m1, m2, m3):
     latex_string = name + " = " + "\\begin{bmatrix}  "
+    for i in range(len(m1)):
+        m1[i] = round(m1[i],4)
+        m2[i] = round(m2[i],4)
+        m3[i] = round(m3[i],4)
     for i in range(len(m1)):
         latex_string += str(m1[i]) + " - " + str(m2[i]) + " - " + str(m3[i]) + " \\\\ "
     latex_string += " \\end{bmatrix} = \\begin{bmatrix}"
@@ -260,47 +289,59 @@ def latex_matrix_sum(name, m1, m2, m3):
     st.latex(latex_string)
 
 
-if st.button("Details of one numerical step."):
+if st.button("Details of one iteration."):
+    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0).")
     col6, col7 = st.beta_columns(2)
     col_help = 0
     mu_value = mu_input
     point = input_point
-    st.latex("\\text{We solve (15.14) numerically at the point } (\\textbf{x}_0, \\textbf{y}_0).")
     matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
     matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
                      "J(\\textbf{x})^T\\textbf{y}"]
+    matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y, RHSB]
+    matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
+                     "J(\\textbf{x})^T\\textbf{y}", "\\textbf{b}-\\textbf{g}-\\textbf{m}"]
     for i in range(len(matrix_list)):
-        if i == 1:
+        if i == 2:
             for j in range(len(g)):
-                g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-                latex_matrix("\\nabla^2 g_" + str(j + 1) + " (\\textbf{x}_0) ", g_subs, True, col6, col7)
+                g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+                if option == 1:
+                    latex_matrix("\\nabla^2 g_" + str(j + 1) + " (\\textbf{x}) ", g_subs, True, col6, col7)
+                else:
+                    latex_matrix("\\nabla^2 g(\\textbf{x}) ", g_subs, True, col6, col7)
+
         else:
-            subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+            subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
             latex_matrix(matrix_string[i], subss, True, col6, col7)
-    b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-    g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-    m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+    b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
     latex_matrix_sum("\\textbf{b}-\\textbf{g}-\\textbf{m}", b_eval, g_eval, m_eval)
-    LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-    st.write(
-        "We eventually get (15.14) numerically, with the coefficient matrix on the left and the right hand side (RHS) on the right.")
-    latex_matrix("\\text{Coefficient Matrix}", LHS_subs, False, col6, col7)
-    RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-    latex_matrix("RHS", RHS_subs, False, col6, col7)
+    LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    st.write("The coefficient matrix on the left of (15.14) is")
+    st.latex(sympy.latex(LHS_subs))
+    st.write("and the right hand side is")
+    RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    st.latex(sympy.latex(RHS_subs))
     st.write("The solution to this is:")
     solv_temp = LHS_subs.LUsolve(RHS_subs)
+    for i,j in enumerate(solv_temp):
+        solv_temp[i] = round(j, 4)
     if option == 1:
         st.latex(sympy.latex(sympy.Matrix(["d_1^x", "d_2^x", "d_1^y", "d_2^y"])) + "= " + sympy.latex(solv_temp))
     else:
         st.latex(sympy.latex(sympy.Matrix(["d^x", "d_y"])) + "= " + sympy.latex(solv_temp))
 
-if st.button(f"(Advanced) Show numeric steps for all remaining {k - 1} iterations."):
-    df1 = df.drop(columns=['k', '||d||', 'lambda', 'f(x)'])
+if st.button(f"Details of all remaining {k - 1} iterations."):
+
+    df1 = df.drop(columns=['k', '||l*d^x||', 'lambda', 'f(x)', "d^x"])
     for index, df_row in df1.iterrows():
+        if index == 0:
+            continue
         mu_value = df_row[0]
-        point = list(df_row)
+        point = list(df_row[1:])
         st.latex(
-            f"\\text{{We solve (15.14) numerically at the next point, }} (\\textbf{{x}}_{index + 1}, \\textbf{{y}}_{index + 1}).")
+            f"\\text{{We solve (15.14) numerically at the next point, }} (\\textbf{{x}}_{index}, \\textbf{{y}}_{index}).")
         # col4, col5 = st.beta_columns(2)
         # col_help = 0
         col8, col9 = st.beta_columns(2)
@@ -309,29 +350,38 @@ if st.button(f"(Advanced) Show numeric steps for all remaining {k - 1} iteration
         matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
         matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
                          "J(\\textbf{x})^T\\textbf{y}"]
+        matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y, RHSB]
+        matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
+                         "J(\\textbf{x})^T\\textbf{y}", "\\textbf{b}-\\textbf{g}-\\textbf{m}"]
         for i in range(len(matrix_list)):
-            if i == 1:
+            if i == 2:
                 for j in range(len(g)):
-                    g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-                    latex_matrix("\\nabla^2 g_" + str(j + 1) + f" (\\textbf{{x}}_{index + 1}) ", g_subs, True, col8,
+                    g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+                    if option ==1:
+                        latex_matrix("\\nabla^2 g_" + str(j + 1) + f" (\\textbf{{x}}) ", g_subs, True, col8,
                                  col9)
+                    else:
+                        latex_matrix("\\nabla^2 g" + f" (\\textbf{{x}}) ", g_subs, True, col8,
+                                     col9)
             else:
-                subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+                subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
                 latex_matrix(matrix_string[i], subss, True, col8, col9)
-        b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-        g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-        m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+        b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
         latex_matrix_sum("\\textbf{b}-\\textbf{g}-\\textbf{m}", b_eval, g_eval, m_eval)
-        LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-        st.write(
-            "We eventually get (15.14) numerically, with the coefficient matrix on the left and the right hand side (RHS) on the right.")
-        latex_matrix("\\text{Coefficient Matrix}", LHS_subs, False, col8, col9)
-        RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
-        latex_matrix("\\text{RHS}", RHS_subs, False, col8, col9)
+
+
+
+        LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        st.write("The coefficient matrix on the left of (15.14) is")
+        st.latex(sympy.latex(LHS_subs))
+        st.write("and the right hand side is")
+        RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        st.latex(sympy.latex(RHS_subs))
         st.write("The solution to this is:")
         solv_temp = LHS_subs.LUsolve(RHS_subs)
         st.latex(sympy.latex(solv_temp))
-
 # xspace = np.linspace(-5, 5, 200)
 # yspace = np.linspace(-5, 5, 200)
 # Xmesh, Ymesh = np.meshgrid(xspace, yspace)
