@@ -89,7 +89,8 @@ if option == 1:
     point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
     mu_value = float(mu_input)
 elif option == 2:
-    st.latex(r'''\text{max  } 10x-e^x \\ \text{s.t.   } x \leq 2   ''')
+    st.latex(r'''\text{max  } 10x-e^x''')
+    st.latex(r'''\text{s.t.   } x \leq 2   ''')
     x, mu = sympy.symbols('x mu', real=True)
     X = sympy.Matrix([x])
     y = sympy.symbols('y', real=True)
