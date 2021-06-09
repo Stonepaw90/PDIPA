@@ -61,15 +61,15 @@ if option.split(' ')[1] == "10":
 elif option.split(' ')[1] == "9":
     option = 2
 if option == 1:
-    st.write(r'''$\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}$''' + "\n" + r'''$ \text{s.t.  } x_2 - x_1^{0.5} \leq 0''' +  "\n" + r'''$-x_2 + x_1^{1.5} \leq 0$''')
+    st.write(r'''\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}''' + "\n" + r'''\text{s.t.  } x_2 - x_1^{0.5} \leq 0''' +  "\n" + r'''-x_2 + x_1^{1.5} \leq 0''')
     st.latex(
         "\\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}")
     st.latex("\\text{s.t.  } x_2 - x_1^{0.5} \\leq 0")
     st.latex("-x_2 + x_1^{1.5} \\leq 0")
     st.latex(r"""\begin{aligned}
-    5 & 7533535 \\
-    8 533535    &      x^2
-    \end{aligned}""")
+    \text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2} \\
+    \text{s.t.  } x_2 - x_1^{0.5} \leq 0 \\
+    -x_2 + x_1^{1.5} \leq 0 \end{aligned}""")
     x1, x2, mu = sympy.symbols('x1 x2 mu', real=True)  # Sympy requires that variables be initiated
     X = sympy.Matrix([x1, x2])
     y1, y2 = sympy.symbols('y1 y2', real=True)
