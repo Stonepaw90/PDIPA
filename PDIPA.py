@@ -61,6 +61,8 @@ if option.split(' ')[1] == "10":
 elif option.split(' ')[1] == "9":
     option = 2
 if option == 1:
+    st.write(r'''$\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}\\ \text{s.t.  } x_2 - x_1^{0.5} \leq 0 \\ -x_2 + x_1^{1.5} \leq 0$''')
+)
     st.latex(
         "\\text{max } 10 + 10x_1 - 8x_2 - 4e^{x_1}-e^{x_1-x_2}")
     st.latex("\\text{s.t.  } x_2 - x_1^{0.5} \\leq 0")
