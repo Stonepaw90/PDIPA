@@ -102,9 +102,10 @@ if option == 1:
     col4.write(r"""$y_2 \geq 0$""")
     y2_input = col4.number_input(value = 10.0, label = "", min_value = 0.0, key = "y2")
     col5.write(r"""$\mu > 0$""")
-    mu_value = col5.number_input(value = 1.0, label = "", min_value=0.01, key = "mu")
+    mu_input = col5.number_input(value = 1.0, label = "", min_value=0.01, key = "mu")
     #point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
     point = [x1_input,x2_input, y1_input, y2_input]
+    mu_value = float(mu_input)
     #s = sympy.Matrix([b[i] - g[i].subs([*zip(X, point[:len(X)])]).evalf() for i in range(len(g))])
     #if all([i >= 0 for i in s]):
     #    variable_dict["feasible"] = True
