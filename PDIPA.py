@@ -312,10 +312,6 @@ def latex_matrix(name, matrix_for_me, col_bool, col_use1, col_use2):
 def latex_matrix_sum(name, m1, m2, m3):
     latex_string = name + " = " + "\\begin{bmatrix}  "
     for i in range(len(m1)):
-        m1[i] = round(m1[i],4)
-        m2[i] = round(m2[i],4)
-        m3[i] = round(m3[i],4)
-    for i in range(len(m1)):
         latex_string += str(m1[i]) + " - " + str(m2[i]) + " - " + str(m3[i]) + " \\\\ "
     latex_string += " \\end{bmatrix} = \\begin{bmatrix}"
     new_thing = m1 - m2 - m3
