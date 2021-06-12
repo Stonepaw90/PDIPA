@@ -81,7 +81,7 @@ if option == 1:
     g2 = -x2 + x1 ** (1.5)
     g = sympy.Matrix([g1, g2])
     b = sympy.Matrix([0, 0])
-    alist = ["k", "mu", "x1", "x2", "y1", "y2", "f(x)", "lambda", "d^x", """||l*d^x||"""]
+    alist = ["k", "mu", "x1", "x2", "y1", "y2", "f(x)", "lambda", "d^x", """l*||d^x||"""]
     st.write("Please write your (feasible) initial point.")
     col1, col2, col3, col4, col5 = st.beta_columns(5)
     #while not (variable_dict["feasible"] and variable_dict["pos"]):
@@ -127,7 +127,7 @@ elif option == 2:
     g1 = x
     g = sympy.Matrix([g1])
     b = sympy.Matrix([2])
-    alist = ["k", "mu", "x", "y", "f(x)", "lambda", "d^x", "||l*d^x||"]
+    alist = ["k", "mu", "x", "y", "f(x)", "lambda", "d^x", "l*||d^x||"]
     st.write("Please write your (feasible) initial point.")
     col11, col12, col13 = st.beta_columns(3)
     point = [1, 1]
@@ -240,7 +240,7 @@ last_list = [k, "-", *[round(float(i), 4) for i in point], round(f.subs([*zip(X,
 data.append(last_list)
 df = pd.DataFrame(data, columns=alist)
 st.write(df)
-st.write("""We stopped after iteration """, str(k), """ as $\mid \mid \lambda$ **d**$^x \mid \mid <
+st.write("""We stopped after iteration """, str(k), """ as $\lambda \mid \mid $ **d**$^x \mid \mid <
  \epsilon$, indeed, """, str(round(dnorm, 6)),
          """$<$""", str(epsilon), ".")
 if st.button("Show equations."):
@@ -319,7 +319,7 @@ def latex_matrix_sum(name, m1, m2, m3):
 
 
 if st.button("Details of one iteration."):
-    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0). We show 4 significant figures.")
+    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0). \\text{ We show 4 significant figures.}")
     col6, col7 = st.beta_columns(2)
     col_help = 0
     mu_value = mu_input
@@ -363,7 +363,7 @@ if st.button("Details of one iteration."):
 
 if st.button(f"Details of all remaining {k - 1} iterations."):
 
-    df1 = df.drop(columns=['k', '||l*d^x||', 'lambda', 'f(x)', "d^x"])
+    df1 = df.drop(columns=['k', 'l*||d^x||', 'lambda', 'f(x)', "d^x"])
     for index, df_row in df1.iterrows():
         if index == 0:
             mu_value = float(mu_input)
