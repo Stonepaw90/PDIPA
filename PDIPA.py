@@ -240,7 +240,7 @@ last_list = [k, "-", *[round(float(i), 4) for i in point], round(f.subs([*zip(X,
 data.append(last_list)
 df = pd.DataFrame(data, columns=alist)
 st.write(df)
-st.write("""We stopped after iteration """, str(k), """ as $\lambda \mid \mid $ **d**$^x \mid \mid <
+st.write("""We stopped after iteration """, str(k), """ as $\lambda \mid \mid$**d**$^x \mid \mid <
  \epsilon$, indeed, """, str(round(dnorm, 6)),
          """$<$""", str(epsilon), ".")
 if st.button("Show equations."):
