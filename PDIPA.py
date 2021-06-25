@@ -419,3 +419,9 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
 # Xmesh, Ymesh = np.meshgrid(xspace, yspace)
 # Z = f.subs(np.vstack([Xmesh.ravel(), Ymesh.ravel()])).evalf().reshape((200,200))
 # plt.pyplot.contour(X, Y, Z)
+
+def diff(A, B):
+    #Defines a functino to take the set difference between two lists or sets
+    #A/B are lists/sets
+    return set(A) - set(B)
+diff([1,4,6], [1,2,6])
