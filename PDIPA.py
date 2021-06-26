@@ -51,10 +51,15 @@ gamma = st.sidebar.number_input(r"""""", value = 0.1, step=0.01, help = r"""The 
 #st.sidebar.markdown("""---""")
 variable_dict["shortcut"] = st.sidebar.checkbox(label="""For example 9: Use ratio test (not backtracking). If the ratio test is used, when the step
  lambda_max violates the constraint, it is reduced to satisfy the contraint with equality.""")
-st.title("Primal-dual Interior Point Algorithm")
-st.header("By Abraham Holleran")
-st.write(
-    "Written from the book [Linear and Convex Optimization](https://www.wiley.com/go/veatch/convexandlinearoptimization) under the supervision of the author, Dr. Michael Veatch.")
+st.sidebar.markdown('''
+#### Coded by [Abraham Holleran](https://github.com/Stonepaw90) :sunglasses:
+''')
+st.title("Primal-dual Interior Point Algorithm for Convex Programs")
+
+#st.header("By Abraham Holleran")
+#st.write(
+#    "Written from the book [Linear and Convex Optimization](https://www.wiley.com/go/veatch/convexandlinearoptimization) under the supervision of the author, Dr. Michael Veatch.")
+st.write("Use this website to interact with the Primal-dual Interior Point Algorithm from [Section 15.4](https://www.wiley.com/go/veatch/convexandlinearoptimization) to solve Examples 15.9 and 15.10.")
 
 st.write("Select a problem in the dropdown, then enter the initial conditions below and adjust the parameters on the left. The problem is re-solved after any change. "
          "After solving, you can look at the equations or the numerical steps.")
@@ -210,14 +215,11 @@ while not done and k < 14:
             g_eval = g_i.subs([*zip(all_vars[:len(X)], test_x)])
             if g_eval > b_i:
                 violation = True
-
-        # st.write(float(test_x[0]), float(g_eval), b)
         if violation:
             l *= beta
         else:
             all_constraints_satisfied = True
     l *= alpha
-    # st.write("3")
     dnorm = math.sqrt(sum(map(lambda i: l * i * l * i, solv_eval[:len(X)])))
     mu_scientific = "{:2.1E}".format(mu_value)
     dpowerx = [round(float(io),4) for io in solv_eval[:len(X)]]
@@ -225,13 +227,12 @@ while not done and k < 14:
         dpowerx = dpowerx[0]
     else:
         dpowerx = tuple(dpowerx)
-    value_list = [k, mu_scientific, *[round(float(i), 4) for i in point], round(f_eval, 3), round(l, 5),
+    value_list = [k, mu_scientific, *[round(float(i), 4) for i in point], round(f_eval, 4), round(l, 4),
                   dpowerx, round(dnorm,4)]
     data.append(value_list)
     point = [i + l * j for i, j in zip(point, solv_eval)]
     mu_value *= gamma
     k += 1
-    # st.write("4")
     if dnorm < epsilon:
         done = True
 
@@ -241,7 +242,7 @@ data.append(last_list)
 df = pd.DataFrame(data, columns=alist)
 st.write(df)
 st.write("""We stopped after iteration """, str(k), """ as $\lambda \mid \mid \\textbf{d}^x\mid \mid <
- \epsilon$, indeed, """, str(round(dnorm, 6)),
+ \epsilon$, indeed, """, str(round(dnorm, 4)),
          """$<$""", str(epsilon), ".")
 if st.button("Show equations."):
     columns = st.beta_columns(2)
@@ -285,7 +286,10 @@ def latex_matrix(name, matrix_for_me, col_bool, col_use1, col_use2):
     latex_string = name + " = " + "\\begin{bmatrix}  "
     shape_tuple = matrix_for_me.shape
     for i in range(len(matrix_for_me)):
-        latex_string += str(matrix_for_me[i]) + " & "
+        if round(matrix_for_me[i], 4)%1 == 0:
+            latex_string += str(int(round(matrix_for_me[i], 4))) + " & "
+        else:
+            latex_string += str(round(matrix_for_me[i],4)) + " & "
         if ((i + 1) % shape_tuple[1] == 0):
             latex_string = latex_string[:-3] + " \\\\ "
     latex_string = latex_string[:-3] + "  \\end{bmatrix}"
@@ -303,23 +307,38 @@ def latex_matrix(name, matrix_for_me, col_bool, col_use1, col_use2):
         st.write("Something broke")
 
     col_help += 1
-    # print(latex_string)
-
 
 def latex_matrix_sum(name, m1, m2, m3):
+
+    m1 = digit_fix(m1)
+    m2 = digit_fix(m2)
+    m3 = digit_fix(m3)
     latex_string = name + " = " + "\\begin{bmatrix}  ("
     for i in range(len(m1)):
-        latex_string += str(m1[i]) + ") - (" + str(m2[i]) + ") - (" + str(m3[i]) + ") \\\\ ("
+        latex_string += str(round(m1[i],4)) + ") - (" + str(round(m2[i],4)) + ") - (" + str(round(m3[i],4)) + ") \\\\ ("
     latex_string = latex_string[:-1] + " \\end{bmatrix} = \\begin{bmatrix}"
     new_thing = m1 - m2 - m3
+    new_thing = digit_fix(new_thing)
     for i in new_thing:
-        latex_string += str(i) + " \\\\ "
+        if i%1 == 0:
+            latex_string += str(int(round(i,4))) + " \\\\ "
+        else:
+            latex_string += str(round(i,4)) + " \\\\ "
     latex_string = latex_string[:-2] + "  \\end{bmatrix}"
     st.latex(latex_string)
 
+def digit_fix(subs):
+    for i,j in enumerate(subs):
+        if j%1 == 0:
+            subs[i] = int(j)
+        else:
+            subs[i] = j.round(4)
+            if subs[i] < 0.0001 and subs[i] > -0.0001:
+                subs[i] = 0
+    return(subs)
 
 if st.button("Details of one iteration."):
-    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0). \\text{ We show 4 significant figures.}")
+    st.latex("\\text{We solve (15.14) at the point } (\\textbf{x}, \\textbf{y}) = (\\textbf{x}_0, \\textbf{y}_0).")
     col6, col7 = st.beta_columns(2)
     col_help = 0
     mu_value = mu_input
@@ -333,29 +352,30 @@ if st.button("Details of one iteration."):
     for i in range(len(matrix_list)):
         if i == 2:
             for j in range(len(g)):
-                g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+                g_subs = sympy.hessian(g[j], X).subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
                 if option == 1:
                     latex_matrix("\\nabla^2 g_" + str(j + 1) + " (\\textbf{x}) ", g_subs, True, col6, col7)
                 else:
                     latex_matrix("\\nabla^2 g(\\textbf{x}) ", g_subs, True, col6, col7)
 
         else:
-            subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+            subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
             latex_matrix(matrix_string[i], subss, True, col6, col7)
-    b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
-    g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
-    m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+    g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+    m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
     latex_matrix_sum("\\textbf{b}-\\textbf{g}-\\textbf{m}", b_eval, g_eval, m_eval)
-    LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+    LHS_subs = digit_fix(LHS_subs)
     st.write("The coefficient matrix on the left of (15.14) is")
     st.latex(sympy.latex(LHS_subs))
     st.write("and the right hand side is")
-    RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+    RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+    RHS_subs = digit_fix(RHS_subs)
     st.latex(sympy.latex(RHS_subs))
     st.write("The solution to this is:")
     solv_temp = LHS_subs.LUsolve(RHS_subs)
-    for i,j in enumerate(solv_temp):
-        solv_temp[i] = round(j, 4)
+    solv_temp = digit_fix(solv_temp)
     if option == 1:
         st.latex(sympy.latex(sympy.Matrix(["d_1^x", "d_2^x", "d_1^y", "d_2^y"])) + "= " + sympy.latex(solv_temp))
     else:
@@ -372,8 +392,6 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
         point = list(df_row[1:])
         st.latex(
             f"\\text{{We solve (15.14) numerically at the next point, }} (\\textbf{{x}}_{index}, \\textbf{{y}}_{index}).")
-        # col4, col5 = st.beta_columns(2)
-        # col_help = 0
         col8, col9 = st.beta_columns(2)
 
         col_help = 0
@@ -394,23 +412,25 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
                         latex_matrix("\\nabla^2 g" + f" (\\textbf{{x}}) ", g_subs, True, col8,
                                      col9)
             else:
-                subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+                subss = matrix_list[i].subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
                 latex_matrix(matrix_string[i], subss, True, col8, col9)
-        b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
-        g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
-        m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        b_eval = b.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+        g_eval = g.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+        m_eval = m.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
         latex_matrix_sum("\\textbf{b}-\\textbf{g}-\\textbf{m}", b_eval, g_eval, m_eval)
 
 
 
-        LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        LHS_subs = LHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+        LHS_subs = digit_fix(LHS_subs)
         st.write("The coefficient matrix on the left of (15.14) is")
         st.latex(sympy.latex(LHS_subs))
         st.write("and the right hand side is")
-        RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf(4)
+        RHS_subs = RHS.subs([*zip(all_vars, point), (mu, mu_value)]).evalf()
+        RHS_subs = digit_fix(RHS_subs)
         st.latex(sympy.latex(RHS_subs))
         st.write("The solution to this is:")
-        solv_temp = LHS_subs.LUsolve(RHS_subs)
+        solv_temp = digit_fix(LHS_subs.LUsolve(RHS_subs))
         st.latex(sympy.latex(solv_temp))
         st.markdown("""---""")
 
@@ -419,9 +439,3 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
 # Xmesh, Ymesh = np.meshgrid(xspace, yspace)
 # Z = f.subs(np.vstack([Xmesh.ravel(), Ymesh.ravel()])).evalf().reshape((200,200))
 # plt.pyplot.contour(X, Y, Z)
-
-def diff(A, B):
-    #Defines a functino to take the set difference between two lists or sets
-    #A/B are lists/sets
-    return set(A) - set(B)
-diff([1,4,6], [1,2,6])
