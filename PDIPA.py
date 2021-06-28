@@ -34,7 +34,6 @@ gamma = 0.1  # duality gapstopping tolerance
 variable_dict = {"shortcut": False, "show_symbo": False, "show_numeric": False, "show_all_numeric": False, "feasible": False, "pos": False}
 
 # Carefully put your variables, functions, and constraints here.
-
 #st.sidebar.button("Re Run")
 st.sidebar.header("Parameters")
 st.sidebar.write(r"""$\alpha$: Step size Multiplier.""")
