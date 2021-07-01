@@ -4,15 +4,6 @@
 # # This is a program that runs the primal dual interior point algorithm given a function and a starting point  (and some other variables)
 # ### by Abraham Holleran
 
-# Anaconda
-# cd /D C:\Users\Abraham\miniconda3\envs\snowflakes\Scripts
-# Laptop: cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts
-# streamlit run PDIPA.py
-
-#In terminal
-
-#cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts
-# streamlit run PDIPA.py
 import numpy as np
 import pandas as pd
 import sympy
@@ -20,17 +11,9 @@ import math
 import streamlit as st
 from functools import reduce
 
-#import os
-#os.system(r"cd /D c:\users\mossf\appdata\roaming\python\python39\Scripts | streamlit run PDIPA.py")
-#os.system("streamlit run PDIPA.py")
 st.set_page_config(layout="wide")
-# Edit these meta values if necessary.
 
 
-alpha = 0.8  # step size parameter for getting away from constraint
-beta = 0.9  # step size it parameter
-epsilon = 0.001  # erative parameter
-gamma = 0.1  # duality gapstopping tolerance
 variable_dict = {"shortcut": False, "show_symbo": False, "show_numeric": False, "show_all_numeric": False, "feasible": False, "pos": False}
 
 # Carefully put your variables, functions, and constraints here.
@@ -50,11 +33,8 @@ gamma = st.sidebar.number_input(r"""""", value = 0.1, step=0.01, help = r"""The 
 #st.sidebar.markdown("""---""")
 variable_dict["shortcut"] = st.sidebar.checkbox(label="""For example 9: Use ratio test (not backtracking). If the ratio test is used, when the step
  lambda_max violates the constraint, it is reduced to satisfy the contraint with equality.""")
-st.sidebar.markdown('''
-#### Coded by [Abraham Holleran](https://github.com/Stonepaw90) :sunglasses:
-''')
 st.title("Primal-dual Interior Point Algorithm for Convex Programs")
-
+st.markdown("### Coded by [Abraham Holleran](https://github.com/Stonepaw90) :sunglasses:")
 #st.header("By Abraham Holleran")
 #st.write(
 #    "Written from the book [Linear and Convex Optimization](https://www.wiley.com/go/veatch/convexandlinearoptimization) under the supervision of the author, Dr. Michael Veatch.")
@@ -101,25 +81,15 @@ if option == 1:
     y2_input = col4.number_input(value = 10.0, label = "", min_value = 0.0, key = "y2")
     col5.write(r"""$\mu > 0$""")
     mu_input = col5.number_input(value = 1.0, label = "", min_value=0.001, key = "mu")
-    #point = [float(x1_input), float(x2_input), float(y1_input), float(y2_input)]
     mu_value = float(mu_input)
     point = [x1_input,x2_input, y1_input, y2_input]
-    #s = sympy.Matrix([b[i] - g[i].subs([*zip(X, point[:len(X)])]).evalf() for i in range(len(g))])
-    #if all([i >= 0 for i in s]):
-    #    variable_dict["feasible"] = True
-    #else:
-    #    st.write(r"""The initial point does not satisfy the constraints. The slacks \\(s_1,s_2\\) = """, tuple([*s]),  r"""are negative.""")
-    #if all([i >= 0 for i in point[len(Y):]]):
-    #    variable_dict["pos"] = True
-    #else:
-    #    st.latex(r"""Please use nonnegative $y$ values.""")
+
 
 elif option == 2:
     st.latex(r"""\begin{aligned}
     &\text{max  } 10x-e^x& \\
     &\text{s.t.     } x \leq 2&
     \end{aligned} """)
-    #st.latex(r'''\text{max  } 10x-e^x \\ \text{s.t.   } x \leq 2   ''')
     x, mu = sympy.symbols('x mu', real=True)
     X = sympy.Matrix([x])
     y = sympy.symbols('y', real=True)
@@ -239,21 +209,29 @@ last_list = [k, "-", *[round(float(i), 4) for i in point], round(f.subs([*zip(X,
                   "-", "-"]
 data.append(last_list)
 df = pd.DataFrame(data, columns=alist)
-st.write(df)
+st.markdown("""
+<style>
+table td:nth-child(1) {
+    display: none
+}
+table th:nth-child(1) {
+    display: none
+}
+</style>
+""", unsafe_allow_html=True)
+# st.dataframe(df)
+st.table(df)
 st.write("""We stopped after iteration """, str(k), """ as $\lambda \mid \mid \\textbf{d}^x\mid \mid <
  \epsilon$, indeed, """, str(round(dnorm, 4)),
          """$<$""", str(epsilon), ".")
 if st.button("Show equations."):
     columns = st.beta_columns(2)
     col_help2 = 0
-    #matrix_list = [H, None, Q, gradient(f, X).T, J.T * Y, RHSB]
 
     matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y, RHSB]
     matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
                      "J(\\textbf{x})^T\\textbf{y}", "\\textbf{b}-\\textbf{g}-\\textbf{m}"]
 
-    #matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
-    #                 "J(\\textbf{x})^T\\textbf{y}","\\textbf{b}-\\textbf{g}-\\textbf{m}"]
     for i,j in zip(matrix_list, matrix_string):
         with columns[col_help2 % 2]:
             col_help2 += 1
@@ -342,9 +320,6 @@ if st.button("Details of one iteration."):
     col_help = 0
     mu_value = mu_input
     point = input_point
-    #matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
-    #matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
-    #                 "J(\\textbf{x})^T\\textbf{y}"]
     matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y]
     matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
                      "J(\\textbf{x})^T\\textbf{y}"]
@@ -394,9 +369,6 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
         col8, col9 = st.beta_columns(2)
 
         col_help = 0
-        #matrix_list = [H, None, Q, gradient(f, X), J.T * Y]
-        #matrix_string = ["\\nabla^2 f(\\textbf{x}) ", None, "Q", "\\nabla f(\\textbf{x})",
-        #                 "J(\\textbf{x})^T\\textbf{y}"]
         matrix_list = [gradient(f, X).T, H, None, Q, J.T * Y]
         matrix_string = ["\\nabla f(\\textbf{x})", "\\nabla^2 f(\\textbf{x}) ", None, "Q",
                          "J(\\textbf{x})^T\\textbf{y}"]
@@ -432,9 +404,3 @@ if st.button(f"Details of all remaining {k - 1} iterations."):
         solv_temp = digit_fix(LHS_subs.LUsolve(RHS_subs))
         st.latex(sympy.latex(solv_temp))
         st.markdown("""---""")
-
-# xspace = np.linspace(-5, 5, 200)
-# yspace = np.linspace(-5, 5, 200)
-# Xmesh, Ymesh = np.meshgrid(xspace, yspace)
-# Z = f.subs(np.vstack([Xmesh.ravel(), Ymesh.ravel()])).evalf().reshape((200,200))
-# plt.pyplot.contour(X, Y, Z)
